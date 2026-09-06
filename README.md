@@ -19,7 +19,7 @@
 - **Case-study modals** — 7 real projects (DevPair CRDT IDE, Marketplace monorepo, Accountability AI SaaS, games, WordPress on Pantheon)
 - **Custom cursor** — spring-trailing glow ring that morphs into a `VIEW` badge over projects (desktop only)
 - **Working contact form** — Formspree delivery when configured, mail-app fallback otherwise — a message is never lost
-- **Download CV** — print-optimized replica of the resume → *Save as PDF*
+- **Download CV** — one-page resume PDF with clickable links, served from `public/`
 
 ## 🛠️ Stack
 
@@ -50,9 +50,9 @@ Works out of the box via the visitor's mail app. For direct-to-inbox delivery:
 
 ## 📄 Download CV
 
-The CV buttons call `window.print()` against a print-only replica of the resume
-(`src/cv.tsx` — portaled outside `#root` so it prints cleanly) → *Save as PDF*.
-To serve a static PDF instead, drop it in `public/` and point the buttons at it.
+The CV buttons download `public/Mohamad-Mahdi-Mehralian-CV.pdf` directly —
+a one-page replica of the resume with clickable links (portfolio link first).
+Regenerate it from the script after editing the content (needs `pip install fpdf2`).
 
 ## 📁 Structure
 
@@ -60,8 +60,9 @@ To serve a static PDF instead, drop it in `public/` and point the buttons at it.
 src/
   App.tsx    # sections: hero/terminal, about, skills, work + modal, journey, contact
   data.ts    # ALL content (profile, skills, projects, timeline) — edit here
-  cv.tsx     # print-only resume replica
-  index.css  # Tailwind v4 theme, keyframes, spotlight, print rules
+  index.css  # Tailwind v4 theme, keyframes, spotlight, reduced-motion
+public/
+  Mohamad-Mahdi-Mehralian-CV.pdf  # downloadable resume (portfolio link first)
 ```
 
 ## ⚡ Performance

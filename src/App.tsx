@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode, type MouseEvent as RMEvent, type FormEvent } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useScroll, useSpring, useInView, useMotionValue } from "framer-motion";
 import Lenis from "lenis";
 import {
@@ -8,7 +7,6 @@ import {
   Sparkles, Terminal, GraduationCap, Languages as LangIcon, Globe, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, Download,
 } from "lucide-react";
 import { profile, techMarquee, skillGroups, projects, timeline } from "./data";
-import { CvPrint } from "./cv";
 
 function GithubIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
   return (
@@ -250,8 +248,6 @@ export default function App() {
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const printCv = () => window.print();
-
   // Real submit: Formspree when VITE_FORMSPREE_FORM_ID is set,
   // otherwise opens the visitor's mail app with everything pre-filled (nothing is lost).
   const submitForm = async (e: FormEvent) => {
@@ -386,9 +382,9 @@ export default function App() {
                   <a href={profile.github} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold hover:bg-white/10 transition">
                     <GithubIcon size={17} /> GitHub
                   </a>
-                  <button onClick={printCv} className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold hover:bg-white/10 transition-all hover:-translate-y-0.5">
+                  <a href="/Mohamad-Mahdi-Mehralian-CV.pdf" download="Mohamad-Mahdi-Mehralian-CV.pdf" className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold hover:bg-white/10 transition-all hover:-translate-y-0.5">
                     <Download size={17} /> Download CV
-                  </button>
+                  </a>
                 </div>
               </Reveal>
               <Reveal delay={0.3}>
@@ -674,7 +670,7 @@ export default function App() {
                 <a href={`mailto:${profile.email}`} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 hover:border-cyan-300/40 transition"><Mail size={16} className="text-cyan-300" /> {profile.email}</a>
                 <a href={`tel:${profile.phone.replace(/\s/g, "")}`} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 hover:border-cyan-300/40 transition"><Phone size={16} className="text-violet-300" /> {profile.phone}</a>
                 <a href={profile.github} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 hover:border-cyan-300/40 transition"><GithubIcon size={16} className="text-lime-200" /> {profile.githubHandle} <ArrowUpRight size={14} className="ml-auto text-slate-500" /></a>
-                <button onClick={printCv} className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 hover:border-cyan-300/40 transition"><Download size={16} className="text-cyan-300" /> Download CV (PDF via print) <ArrowUpRight size={14} className="ml-auto text-slate-500" /></button>
+                <a href="/Mohamad-Mahdi-Mehralian-CV.pdf" download="Mohamad-Mahdi-Mehralian-CV.pdf" className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 hover:border-cyan-300/40 transition"><Download size={16} className="text-cyan-300" /> Download CV <ArrowUpRight size={14} className="ml-auto text-slate-500" /></a>
               </div>
             </div>
             <Reveal delay={0.12}>
@@ -729,13 +725,6 @@ export default function App() {
           </div>
         </div>
       </footer>
-
-      {/* print-only CV — portaled to <body> so hiding #root in print doesn't hide this */}
-      {typeof document !== "undefined" &&
-        createPortal(
-          <div id="cv-print" aria-hidden="true"><CvPrint /></div>,
-          document.body
-        )}
     </div>
   );
 }

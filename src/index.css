@@ -112,12 +112,3 @@ a, button, [role="button"] { cursor: pointer; }
   .animate-marquee, .animate-float, .terminal-blink { animation: none !important; }
   *, *::before, *::after { transition-duration: 0.01ms !important; }
 }
-
-/* ---- print-only CV (window.print → Save as PDF) ---- */
-#cv-print { display: none; }
-@media print {
-  #root { display: none !important; }
-  #cv-print { display: block !important; }
-  body { background: #fff !important; color: #000 !important; }
-  @page { margin: 12mm; }
-}
