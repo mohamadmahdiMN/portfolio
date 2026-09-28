@@ -8,10 +8,13 @@ export default defineConfig({
     target: 'esnext',
     sourcemap: false,
     cssMinify: true,
+    cssCodeSplit: true,
+    assetsInlineLimit: 4096,
     chunkSizeWarningLimit: 600,
+    modulePreload: { polyfill: false },
     rollupOptions: {
       output: {
-        // Split heavy deps into cached, parallel-loadable chunks
+        // Split heavy deps into cached, parallel-loadable chunks (Rolldown-native).
         codeSplitting: {
           groups: [
             { name: 'vendor', test: /node_modules[\\/](react|react-dom|scheduler)/ },

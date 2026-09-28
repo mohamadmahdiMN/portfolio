@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode, type MouseEvent as RMEvent, type FormEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type MouseEvent as RMEvent, type FormEvent } from "react";
 import { motion, AnimatePresence, useScroll, useSpring, useInView, useMotionValue } from "framer-motion";
 import Lenis from "lenis";
 import {
@@ -8,13 +8,13 @@ import {
 } from "lucide-react";
 import { profile, techMarquee, skillGroups, projects, timeline } from "./data";
 
-function GithubIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
+const GithubIcon = memo(function GithubIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12v3.15c0 .3.2.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
     </svg>
   );
-}
+});
 
 /* ---------- helpers ---------- */
 const TYPED_WORDS = ["Full-Stack Engineer", "React & Next.js Specialist", "Realtime Systems Builder", "WordPress Developer", "AI-Native Vibe Coder"];
@@ -40,7 +40,7 @@ function useTyping(words: string[], speed = 70, pause = 1400) {
   return text;
 }
 
-function Counter({ to, suffix = "", duration = 1.6 }: { to: number; suffix?: string; duration?: number }) {
+const Counter = memo(function Counter({ to, suffix = "", duration = 1.6 }: { to: number; suffix?: string; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const [val, setVal] = useState(0);
@@ -57,9 +57,9 @@ function Counter({ to, suffix = "", duration = 1.6 }: { to: number; suffix?: str
     return () => cancelAnimationFrame(raf);
   }, [inView, to, duration]);
   return <span ref={ref}>{val}{suffix}</span>;
-}
+});
 
-function Reveal({ children, delay = 0, y = 28, className = "" }: { children: ReactNode; delay?: number; y?: number; className?: string }) {
+const Reveal = memo(function Reveal({ children, delay = 0, y = 28, className = "" }: { children: ReactNode; delay?: number; y?: number; className?: string }) {
   return (
     <motion.div
       className={className}
@@ -71,7 +71,7 @@ function Reveal({ children, delay = 0, y = 28, className = "" }: { children: Rea
       {children}
     </motion.div>
   );
-}
+});
 
 let spotTick = false;
 function spotlight(e: RMEvent<HTMLElement>) {
@@ -87,7 +87,7 @@ function spotlight(e: RMEvent<HTMLElement>) {
   });
 }
 
-function SectionHead({ kicker, title, desc }: { kicker: string; title: string; desc?: string }) {
+const SectionHead = memo(function SectionHead({ kicker, title, desc }: { kicker: string; title: string; desc?: string }) {
   return (
     <div className="max-w-3xl">
       <Reveal>
@@ -101,10 +101,10 @@ function SectionHead({ kicker, title, desc }: { kicker: string; title: string; d
       {desc && <Reveal delay={0.15}><p className="mt-4 text-slate-400 leading-relaxed">{desc}</p></Reveal>}
     </div>
   );
-}
+});
 
-/* ---------- cool custom cursor (desktop only, GPU-friendly) ---------- */
-function CoolCursor() {
+/* ---------- cool custom cursor (desktop only, GPU-friendly, deferred) ---------- */
+const CoolCursor = memo(function CoolCursor() {
   const [enabled, setEnabled] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [viewing, setViewing] = useState(false);
@@ -171,7 +171,7 @@ function CoolCursor() {
       </motion.div>
     </>
   );
-}
+});
 
 /* ---------- app ---------- */
 export default function App() {
@@ -204,8 +204,9 @@ export default function App() {
     return () => clearInterval(id);
   }, [loading]);
 
-  // Lenis smooth scroll — tuned for perf (lerp + raf cleanup)
+  // Lenis smooth scroll — tuned for perf (lerp + raf cleanup), skipped on reduced-motion
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
     let raf = 0;
     const loop = (t: number) => { lenis.raf(t); raf = requestAnimationFrame(loop); };
@@ -223,9 +224,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = activeProject ? "hidden" : "";
+    document.body.style.overflow = activeProject || loading ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [activeProject]);
+  }, [activeProject, loading]);
 
   // Preloader counter
   useEffect(() => {
@@ -238,19 +239,19 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
-  const copyEmail = async () => {
+  const copyEmail = useCallback(async () => {
     try { await navigator.clipboard.writeText(profile.email); } catch { /* noop */ }
     setCopied(true); setTimeout(() => setCopied(false), 1600);
-  };
+  }, []);
 
-  const go = (id: string) => {
+  const go = useCallback((id: string) => {
     setMenuOpen(false);
     document.querySelector(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  }, []);
 
   // Real submit: Formspree when VITE_FORMSPREE_FORM_ID is set,
   // otherwise opens the visitor's mail app with everything pre-filled (nothing is lost).
-  const submitForm = async (e: FormEvent) => {
+  const submitForm = useCallback(async (e: FormEvent) => {
     e.preventDefault();
     setSendError(null);
     if (!formspreeId) {
@@ -276,20 +277,23 @@ export default function App() {
     } finally {
       setSending(false);
     }
-  };
+  }, [formspreeId, formName, formEmail, formMsg]);
 
-  const iconFor = (k: string) => {
+  const iconFor = useCallback((k: string) => {
     if (k === "monitor") return <Monitor size={18} />;
     if (k === "code") return <Code2 size={18} />;
     if (k === "server") return <Server size={18} />;
     if (k === "globe") return <Globe size={18} />;
     if (k === "sparkles") return <Sparkles size={18} />;
     return <Database size={18} />;
-  };
+  }, []);
+
+  const navLinks = useMemo(() => [["#about", "About"], ["#skills", "Skills"], ["#work", "Work"], ["#journey", "Journey"], ["#contact", "Contact"]] as const, []);
+  const heroStats = useMemo(() => [{ v: 13, s: "", l: "live projects" }, { v: 20, s: "+", l: "core technologies" }, { v: 100, s: "%", l: "typescript mindset" }], []);
 
   return (
     <div className="min-h-screen bg-[#06070b] text-slate-100 selection:bg-cyan-400">
-      <CoolCursor />
+      {!loading && <CoolCursor />}
       {/* scroll progress */}
       <motion.div style={{ scaleX: bar }} className="fixed top-0 left-0 right-0 h-[3px] origin-left bg-gradient-to-r from-cyan-400 via-violet-400 to-lime-300 z-[80]" />
 
@@ -319,15 +323,15 @@ export default function App() {
                 <span className="block font-mono2 text-[10px] text-emerald-300"><span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />open to work</span>
               </span>
             </button>
-            <nav className="hidden md:flex items-center gap-1 text-sm text-slate-300">
-              {[["#about", "About"], ["#skills", "Skills"], ["#work", "Work"], ["#journey", "Journey"], ["#contact", "Contact"]].map(([href, label]) => (
+            <nav className="hidden md:flex items-center gap-1 text-sm text-slate-300" aria-label="Primary">
+              {navLinks.map(([href, label]) => (
                 <button key={href} onClick={() => go(href)} className="rounded-lg px-3 py-2 hover:bg-white/10 hover:text-white transition">{label}</button>
               ))}
               <a href={profile.github} target="_blank" rel="noreferrer" className="ml-2 inline-flex items-center gap-2 rounded-xl bg-white text-black px-4 py-2 font-semibold hover:bg-cyan-300 transition">
                 <GithubIcon size={16} /> Hire me <ArrowUpRight size={15} />
               </a>
             </nav>
-            <button className="md:hidden rounded-lg border border-white/10 p-2" onClick={() => setMenuOpen(!menuOpen)} aria-label="menu">
+            <button className="md:hidden rounded-lg border border-white/10 p-2" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}>
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
@@ -335,7 +339,7 @@ export default function App() {
             {menuOpen && (
               <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
                 className="md:hidden mt-2 rounded-2xl border border-white/10 bg-[#0c0e14]/95 backdrop-blur-xl p-2">
-                {[["#about", "About"], ["#skills", "Skills"], ["#work", "Work"], ["#journey", "Journey"], ["#contact", "Contact"]].map(([href, label]) => (
+                {navLinks.map(([href, label]) => (
                   <button key={href} onClick={() => go(href)} className="block w-full text-left rounded-xl px-4 py-3 hover:bg-white/10">{label}</button>
                 ))}
               </motion.div>
@@ -389,7 +393,7 @@ export default function App() {
               </Reveal>
               <Reveal delay={0.3}>
                 <div className="mt-9 grid grid-cols-3 max-w-md gap-4">
-                  {[{ v: 7, s: "", l: "live projects" }, { v: 20, s: "+", l: "core technologies" }, { v: 100, s: "%", l: "typescript mindset" }].map((s, i) => (
+                  {heroStats.map((s, i) => (
                     <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                       <div className="font-display text-2xl sm:text-3xl font-bold"><Counter to={s.v} suffix={s.s} /></div>
                       <div className="text-xs text-slate-500 mt-1">{s.l}</div>
@@ -461,8 +465,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* marquee — memoized list, GPU transform only */}
-        <div className="relative mt-14 border-y border-white/10 bg-white/[0.02] py-4 overflow-hidden mask-fade-x">
+        {/* marquee — memoized list, GPU transform only, decorative */}
+        <div className="relative mt-14 border-y border-white/10 bg-white/[0.02] py-4 overflow-hidden mask-fade-x" aria-hidden="true">
           <div className="flex w-max animate-marquee gap-3 pr-3 will-change-transform">
             {marqueeItems.map((t, i) => (
               <span key={i} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-slate-300 whitespace-nowrap">
@@ -545,7 +549,7 @@ export default function App() {
 
       {/* ---------- PROJECTS ---------- */}
       <section id="work" className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-24 scroll-mt-24">
-        <SectionHead kicker="selected work" title="Proof, not promises." desc="Everything from my GitHub — React SaaS, realtime systems, vanilla JS, and a live WordPress build. Click any card for details." />
+        <SectionHead kicker="selected work" title="Proof, not promises." desc="13 builds from my GitHub — Persian marketplace, AI incident-response, realtime IDEs, release workspaces, event planning, Linear-style Kanban, SaaS, games, and a live WordPress build. Click any card for details." />
         <div className="mt-10 grid lg:grid-cols-2 gap-5">
           {projects.map((p, i) => (
             <Reveal key={p.id} delay={(i % 2) * 0.08}>
@@ -590,6 +594,7 @@ export default function App() {
             const p = projects.find((x) => x.id === activeProject)!;
             return (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                role="dialog" aria-modal="true" aria-label={`${p.name} case study`}
                 className="fixed inset-0 z-[90] grid place-items-center p-4 bg-black/70 backdrop-blur-md" onClick={() => setActiveProject(null)}>
                 <motion.div initial={{ y: 40, scale: 0.97, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 20, scale: 0.98, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 260, damping: 26 }}
@@ -601,7 +606,7 @@ export default function App() {
                       <h3 className="font-display text-3xl font-bold mt-1">{p.name}</h3>
                       <div className="text-slate-400 text-sm">{p.subtitle}</div>
                     </div>
-                    <button onClick={() => setActiveProject(null)} className="rounded-lg border border-white/10 p-2 hover:bg-white/10"><X size={16} /></button>
+                    <button onClick={() => setActiveProject(null)} aria-label="Close case study" className="rounded-lg border border-white/10 p-2 hover:bg-white/10"><X size={16} /></button>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-1.5">{p.stack.map((s) => <span key={s} className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-300">{s}</span>)}</div>
                   <ul className="mt-5 space-y-3">
@@ -679,12 +684,12 @@ export default function App() {
                   <form onSubmit={submitForm} className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <label className="block"><span className="text-xs font-mono2 text-slate-500 uppercase">name</span>
-                        <input required value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Ada Lovelace" className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300/60 placeholder:text-slate-600" /></label>
+                        <input required name="name" autoComplete="name" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Ada Lovelace" className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300/60 placeholder:text-slate-600" /></label>
                       <label className="block"><span className="text-xs font-mono2 text-slate-500 uppercase">email</span>
-                        <input required type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="cto@company.com" className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300/60 placeholder:text-slate-600" /></label>
+                        <input required name="email" autoComplete="email" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="cto@company.com" className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300/60 placeholder:text-slate-600" /></label>
                     </div>
                     <label className="block"><span className="text-xs font-mono2 text-slate-500 uppercase">message</span>
-                      <textarea required rows={5} value={formMsg} onChange={(e) => setFormMsg(e.target.value)} placeholder="Hi Mahdi — we need a full-stack engineer who can own realtime collab. Are you open for a chat?" className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300/60 placeholder:text-slate-600 resize-none" /></label>
+                      <textarea required name="message" autoComplete="off" rows={5} value={formMsg} onChange={(e) => setFormMsg(e.target.value)} placeholder="Hi Mahdi — we need a full-stack engineer who can own realtime collab. Are you open for a chat?" className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300/60 placeholder:text-slate-600 resize-none" /></label>
                     {sendError && (
                       <div className="rounded-xl border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
                         {sendError} <a className="underline" href={`mailto:${profile.email}`}>{profile.email}</a>

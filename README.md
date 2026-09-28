@@ -16,7 +16,7 @@
 - **Cinematic preloader** — 0–100% compile counter with blur-out exit
 - **Interactive terminal hero** — auto-rotating project showcase with prev/next + dots, live typing effect
 - **Bento grid** — about, education, stats, and 6 animated skill groups (Frontend, Languages, Backend, Data & Systems, WordPress, AI Workflow)
-- **Case-study modals** — 7 real projects (DevPair CRDT IDE, Marketplace monorepo, Accountability AI SaaS, games, WordPress on Pantheon)
+- **Case-study modals** — 13 real projects (Bazargah marketplace, Aegis AI incident-response, DevPair CRDT IDE, Marketplace monorepo, Gatherly, LaunchGate, Kube Engine, Accountability AI SaaS, games, WordPress on Pantheon)
 - **Custom cursor** — spring-trailing glow ring that morphs into a `VIEW` badge over projects (desktop only)
 - **Working contact form** — Formspree delivery when configured, mail-app fallback otherwise — a message is never lost
 - **Download CV** — one-page resume PDF with clickable links, served from `public/`
